@@ -1,199 +1,537 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <title>Clawd Marketing Dashboard</title>
-    <style>
-        /* [Layout] */
-        body { margin: 0; display: flex; height: 100vh; font-family: sans-serif; background: #f5f7fa; color: #333; }
-        
-        /* [Sidebar] */
-        .sidebar { width: 280px; background: white; border-right: 1px solid #e1e4e8; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; font-weight: bold; font-size: 18px; border-bottom: 1px solid #eee; color: #2c3e50; }
-        .nav-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .nav-item { padding: 12px 15px; margin-bottom: 5px; border-radius: 6px; cursor: pointer; transition: 0.2s; font-size: 14px; color: #555; }
-        .nav-item:hover { background: #f0f4f8; color: #000; }
-        .nav-item.active { background: #3498db; color: white; font-weight: bold; }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>마케팅 대시보드 | 한국조리기능장요리발효학원</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', sans-serif; box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; background: #f5f5f5; }
 
-        /* [Main] */
-        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        
-        /* [Toolbar] */
-        .toolbar { padding: 15px 30px; background: white; border-bottom: 1px solid #eee; display: flex; gap: 20px; align-items: center; justify-content: space-between; }
-        .mode-tabs button { padding: 8px 20px; border: 1px solid #ddd; background: white; cursor: pointer; border-radius: 20px; font-weight: bold; color: #555; margin-right: 5px; }
-        .mode-tabs button.active.blog { background: #03c75a; color: white; border-color: #03c75a; }
-        .mode-tabs button.active.insta { background: linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888); color: white; border: none; }
-        
-        .option-tabs button { padding: 6px 12px; border: 1px solid #ddd; background: #f9f9f9; cursor: pointer; border-radius: 4px; font-size: 13px; }
-        .option-tabs button.active { background: #333; color: white; border-color: #333; }
+    /* ── scrollbar ── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 4px; }
 
-        /* [Content Area] */
-        .content-area { flex: 1; overflow-y: auto; padding: 40px; display: flex; justify-content: center; }
-        
-        /* [Blog Style] */
-        .blog-card { width: 100%; max-width: 700px; background: white; border: 1px solid #ddd; padding: 40px; border-radius: 8px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); }
-        .blog-card h3 { color: #03c75a; border-bottom: 2px solid #03c75a; padding-bottom: 10px; margin-top: 40px; }
-        .blog-card img { max-width: 100%; border-radius: 8px; margin: 20px 0; }
-        
-        /* [Insta Style] */
-        .insta-card { width: 375px; background: white; border: 1px solid #dbdbdb; border-radius: 3px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        .insta-header { padding: 14px; display: flex; align-items: center; border-bottom: 1px solid #efefef; gap: 10px; font-weight: bold; font-size: 14px; }
-        .insta-img { width: 100%; height: 375px; object-fit: cover; background: #fafafa; }
-        .insta-body { padding: 15px; font-size: 14px; line-height: 1.5; white-space: pre-line; }
-    </style>
+    /* ── mode buttons ── */
+    .mode-blog  { background:#03c75a; color:#fff; border-color:#03c75a; }
+    .mode-insta {
+      background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+      color:#fff; border-color:transparent;
+    }
+
+    /* ── sidebar folder card ── */
+    .folder-card {
+      display:flex; flex-direction:column; gap:2px;
+      padding:10px 12px; border-radius:8px; cursor:pointer;
+      border:1px solid #e5e7eb; background:#fff;
+      transition: all .15s; text-align:left; width:100%;
+    }
+    .folder-card:hover { border-color:#9ca3af; box-shadow:0 1px 4px rgba(0,0,0,.08); }
+    .folder-card.active-blog  { border-color:#03c75a; background:#f0fdf4; box-shadow: inset 3px 0 0 #03c75a; }
+    .folder-card.active-insta { border-color:#e1306c; background:#fff0f5; box-shadow: inset 3px 0 0 #e1306c; }
+
+    /* ── version tab ── */
+    .v-tab { padding:5px 18px; border-radius:999px; font-size:13px; font-weight:500;
+             border:1px solid #d1d5db; background:#fff; cursor:pointer; transition:all .15s; }
+    .v-tab:hover { background:#f9fafb; }
+    .v-tab.on-blog  { background:#03c75a; color:#fff; border-color:#03c75a; }
+    .v-tab.on-insta {
+      background:linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+      color:#fff; border-color:transparent;
+    }
+
+    /* ══════════════════════════════════════════
+       NAVER BLOG PREVIEW
+    ══════════════════════════════════════════ */
+    .naver-wrap {
+      max-width: 860px;
+      background: #fff;
+      border: 1px solid #e8e8e8;
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    .naver-top-bar { height: 3px; background: #03c75a; }
+    .naver-header { padding: 28px 40px 20px; border-bottom: 1px solid #f0f0f0; }
+    .naver-title  { font-size: 26px; font-weight: 700; color: #191919; line-height: 1.4; margin-bottom: 6px; }
+    .naver-meta   { font-size: 13px; color: #aaa; }
+    .naver-body   {
+      padding: 28px 40px;
+      font-size: 15.5px; line-height: 1.95; color: #333;
+    }
+    .naver-body img {
+      max-width: 100%; display: block; margin: 22px auto;
+      border-radius: 4px; box-shadow: 0 1px 6px rgba(0,0,0,.1);
+    }
+    .naver-body p  { margin: 0 0 14px; }
+    .naver-body h2 { font-size: 20px; font-weight: 700; margin: 28px 0 10px; color: #191919; }
+    .naver-body h3 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; color: #333; }
+    .naver-body hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+    .naver-tags {
+      padding: 14px 40px;
+      border-top: 1px solid #f0f0f0;
+      display: flex; flex-wrap: wrap; gap: 6px;
+    }
+    .naver-tag { font-size: 13px; color: #03c75a; }
+    .naver-footer {
+      padding: 20px 40px 28px;
+      background: #f9f9f9;
+      border-top: 1px solid #f0f0f0;
+    }
+    .naver-footer-card {
+      background: #fff; border: 1px solid #e8e8e8;
+      border-radius: 8px; padding: 18px 20px;
+    }
+    .naver-footer-card h3 { font-size: 15px; font-weight: 700; color: #191919; margin: 0 0 10px; }
+    .naver-footer-card p  { font-size: 13.5px; color: #555; line-height: 1.7; margin: 3px 0; }
+    .naver-footer-card a  { color: #03c75a; text-decoration: none; }
+
+    /* ══════════════════════════════════════════
+       INSTAGRAM PREVIEW
+    ══════════════════════════════════════════ */
+    .ig-card {
+      width: 390px; background: #fff;
+      border: 1px solid #dbdbdb; border-radius: 8px;
+      overflow: hidden;
+    }
+    .ig-header {
+      display: flex; align-items: center; padding: 10px 12px; gap: 10px;
+    }
+    .ig-avatar {
+      width: 36px; height: 36px; border-radius: 50%; flex-shrink: 0;
+      background: linear-gradient(135deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 10px; font-weight: 700; letter-spacing:-.3px;
+    }
+    .ig-account { line-height: 1.3; }
+    .ig-name    { font-size: 13px; font-weight: 600; color: #262626; }
+    .ig-sub     { font-size: 11px; color: #8e8e8e; }
+    .ig-more    { margin-left: auto; font-size: 18px; color: #262626; letter-spacing: 1px; }
+    .ig-image   {
+      width: 390px; aspect-ratio: 1/1; background: #fafafa;
+      display: flex; align-items: center; justify-content: center; overflow: hidden;
+    }
+    .ig-image img { width: 100%; height: 100%; object-fit: cover; }
+    .ig-image .no-img { font-size: 60px; opacity: .3; }
+    .ig-actions { display: flex; align-items: center; padding: 10px 12px; gap: 14px; font-size: 22px; }
+    .ig-bookmark { margin-left: auto; }
+    .ig-likes   { font-size: 13px; font-weight: 600; padding: 0 12px 6px; color: #262626; }
+    .ig-caption {
+      padding: 0 12px 10px; font-size: 14px;
+      line-height: 1.65; color: #262626; white-space: pre-line;
+    }
+    .ig-caption b { font-weight: 600; margin-right: 3px; }
+    .ig-hashtags {
+      padding: 2px 12px 16px;
+      font-size: 14px; color: #00376b;
+      line-height: 1.7; word-break: break-word;
+    }
+    .ig-time { font-size: 10px; color: #8e8e8e; padding: 0 12px 12px; text-transform: uppercase; }
+
+    /* ── copy flash ── */
+    .copied { background:#10b981 !important; color:#fff !important; border-color:#10b981 !important; }
+
+    /* ── skeleton loader ── */
+    .skel { background:linear-gradient(90deg,#f0f0f0 25%,#e5e5e5 50%,#f0f0f0 75%);
+            background-size:300% 100%; animation:skel .9s infinite; border-radius:4px; }
+    @keyframes skel { 0%{background-position:150% 0} 100%{background-position:-150% 0} }
+  </style>
 </head>
-<body>
 
-    <!-- 사이드바 -->
-    <div class="sidebar">
-        <div class="sidebar-header">📂 작업 목록</div>
-        <div class="nav-list" id="navList">
-            <div style="padding:10px; color:#999;">로딩 중...</div>
+<body class="flex flex-col" style="height:100vh; overflow:hidden;">
+
+  <!-- ══════ HEADER ══════ -->
+  <header class="flex-shrink-0 bg-white border-b border-gray-200 shadow-sm z-50">
+    <div class="max-w-screen-xl mx-auto px-5 h-14 flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <span class="text-2xl">🍳</span>
+        <div>
+          <p class="text-xs font-bold text-gray-800 leading-tight">한국조리기능장요리발효학원</p>
+          <p class="text-xs text-gray-400">마케팅 콘텐츠 대시보드</p>
         </div>
+      </div>
+      <div class="flex gap-2">
+        <button id="btnBlog" onclick="setMode('blog')"
+          class="mode-blog flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border transition-all">
+          📝 네이버 블로그
+        </button>
+        <button id="btnInsta" onclick="setMode('insta')"
+          class="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium border border-gray-300 bg-white transition-all">
+          📱 인스타그램
+        </button>
+      </div>
     </div>
+  </header>
 
-    <!-- 메인 -->
-    <div class="main">
-        <div class="toolbar">
-            <div class="mode-tabs">
-                <button class="active blog" onclick="setMode('blog')">네이버 블로그</button>
-                <button class="insta" onclick="setMode('insta')">인스타그램</button>
-            </div>
-            <div class="option-tabs">
-                <button class="active" onclick="setOption('A')">A. 전문가</button>
-                <button onclick="setOption('B')">B. 감성</button>
-                <button onclick="setOption('C')">C. 홍보</button>
-            </div>
+  <!-- ══════ BODY ══════ -->
+  <div class="flex flex-1 overflow-hidden max-w-screen-xl mx-auto w-full">
+
+    <!-- ── SIDEBAR ── -->
+    <aside class="w-60 flex-shrink-0 bg-white border-r border-gray-200 flex flex-col" style="overflow-y:auto;">
+      <div class="px-3 pt-4 pb-2">
+        <p id="sidebarLabel" class="text-xs font-semibold text-gray-400 uppercase tracking-wider px-1 mb-2">블로그 콘텐츠</p>
+        <div id="sidebarItems" class="flex flex-col gap-1">
+          <!-- JS-rendered -->
+        </div>
+      </div>
+    </aside>
+
+    <!-- ── MAIN ── -->
+    <main class="flex-1 flex flex-col overflow-hidden bg-gray-50">
+
+      <!-- Control bar -->
+      <div id="ctrlBar" class="flex-shrink-0 hidden bg-white border-b border-gray-200 px-5 py-2.5 flex items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xs text-gray-500 font-medium">버전</span>
+          <div class="flex gap-1">
+            <button id="vA" class="v-tab on-blog" onclick="setVersion('A')">A</button>
+            <button id="vB" class="v-tab" onclick="setVersion('B')">B</button>
+            <button id="vC" class="v-tab" onclick="setVersion('C')">C</button>
+          </div>
+          <span id="personaLabel" class="text-xs text-gray-400 ml-1"></span>
+        </div>
+        <div class="flex gap-2">
+          <button id="btnCopyHtml" onclick="copyHtml()"
+            class="hidden flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-300 bg-white hover:bg-gray-50 transition-all">
+            &lt;/&gt; HTML 복사
+          </button>
+          <button id="btnCopyText" onclick="copyText()"
+            class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium border border-gray-300 bg-white hover:bg-gray-50 transition-all">
+            📋 텍스트 복사
+          </button>
+        </div>
+      </div>
+
+      <!-- Preview scroll area -->
+      <div class="flex-1 overflow-y-auto p-6">
+
+        <!-- Empty state -->
+        <div id="emptyState" class="flex flex-col items-center justify-center h-full text-gray-300 select-none">
+          <div style="font-size:72px; line-height:1;">📂</div>
+          <p class="mt-4 text-lg font-medium text-gray-400">왼쪽에서 콘텐츠를 선택하세요</p>
+          <p class="text-sm mt-1 text-gray-300">작업 완료된 폴더가 자동으로 나타납니다</p>
         </div>
 
-        <div class="content-area" id="contentArea">
-            <!-- 내용이 여기에 나옴 -->
+        <!-- Blog preview -->
+        <div id="blogPrev" class="hidden">
+          <div class="naver-wrap shadow-sm mx-auto">
+            <div class="naver-top-bar"></div>
+            <div class="naver-header">
+              <div class="naver-title" id="bTitle"></div>
+              <div class="naver-meta" id="bMeta"></div>
+            </div>
+            <div class="naver-body" id="bBody"></div>
+            <div class="naver-tags" id="bTags"></div>
+            <div class="naver-footer">
+              <div class="naver-footer-card">
+                <h3>🍳 한국조리기능장요리발효학원</h3>
+                <p>📞 051-544-5380 &nbsp;/&nbsp; 010-3688-5380</p>
+                <p>📍 부산 해운대구 반송로924번길 6-2, 2~3층 (영산대역 4번 출구)</p>
+                <p>🕐 평일 09:00~21:00 (주말 상담 예약 필수)</p>
+                <p>🗺️ <a href="https://naver.me/x1mx2Gwq" target="_blank">네이버 지도 보기</a></p>
+              </div>
+            </div>
+          </div>
         </div>
-    </div>
 
-    <script>
-        let globalData = { blog: [], insta: [] }; // 초기화 변경 (객체)
-        let currentIndex = 0;
-        let currentMode = 'blog';
-        let currentOption = 'A';
+        <!-- Instagram preview -->
+        <div id="instaPrev" class="hidden flex justify-center">
+          <div class="ig-card shadow-md">
+            <div class="ig-header">
+              <div class="ig-avatar">기능장</div>
+              <div class="ig-account">
+                <div class="ig-name">leesujin0718</div>
+                <div class="ig-sub">한국조리기능장요리발효학원</div>
+              </div>
+              <div class="ig-more">···</div>
+            </div>
+            <div class="ig-image" id="igImg">
+              <span class="no-img">🍳</span>
+            </div>
+            <div class="ig-actions">
+              <span>🤍</span><span>💬</span><span>✈️</span>
+              <span class="ig-bookmark">🔖</span>
+            </div>
+            <div class="ig-likes">좋아요 ♡</div>
+            <div class="ig-caption" id="igCaption"></div>
+            <div class="ig-hashtags" id="igTags"></div>
+            <div class="ig-time">방금 전</div>
+          </div>
+        </div>
 
-        // 1. 데이터 로드
-        fetch('/data.json?t=' + Date.now())
-            .then(res => res.json())
-            .then(data => {
-                globalData = data; // 객체 그대로 저장
-                renderSidebar();
-                renderContent();
-            })
-            .catch(err => {
-                console.error(err);
-                document.getElementById('navList').innerHTML = '<div style="color:red; padding:10px;">데이터 로드 실패</div>';
-            });
+      </div>
+    </main>
+  </div>
 
-        // 2. 사이드바 그리기 (모드에 따라 다르게)
-        function renderSidebar() {
-            const list = document.getElementById('navList');
-            list.innerHTML = '';
-            
-            // 현재 모드에 맞는 배열 선택
-            const currentList = globalData[currentMode] || [];
-            
-            if (currentList.length === 0) {
-                list.innerHTML = '<div style="padding:15px; color:#999;">작업 내역이 없습니다.</div>';
-                return;
-            }
+<script>
+/* ════════════════════════════════════════
+   STATE
+════════════════════════════════════════ */
+const S = { mode:'blog', version:'A', id:null, data:{blog:[],insta:[]} };
 
-            currentList.forEach((item, index) => {
-                const div = document.createElement('div');
-                div.className = `nav-item ${index === currentIndex ? 'active' : ''}`;
-                div.innerText = item.id;
-                div.onclick = () => {
-                    currentIndex = index;
-                    renderSidebar(); // active 갱신
-                    renderContent();
-                };
-                list.appendChild(div);
-            });
-        }
+const PERSONA_LABELS = {
+  blog: { A:'마케팅 카피라이터', B:'부산 살림 블로거', C:'학원 공식 담당자' },
+  insta:{ A:'트렌디 인플루언서', B:'따뜻한 일상 계정', C:'학원 공식 계정' }
+};
 
-        // 3. 내용 그리기
-        function renderContent() {
-            const container = document.getElementById('contentArea');
-            container.innerHTML = '';
+/* ════════════════════════════════════════
+   INIT
+════════════════════════════════════════ */
+async function init() {
+  try {
+    const r = await fetch('./data.json');
+    S.data = await r.json();
+  } catch(e) {
+    S.data = { blog:[], insta:[] };
+  }
+  renderSidebar();
+}
 
-            const currentList = globalData[currentMode] || [];
-            const item = currentList[currentIndex];
-            
-            if (!item) return;
+/* ════════════════════════════════════════
+   MODE / VERSION
+════════════════════════════════════════ */
+function setMode(mode) {
+  S.mode = mode; S.id = null; S.version = 'A';
+  document.getElementById('btnBlog').className =
+    (mode==='blog' ? 'mode-blog' : 'border border-gray-300 bg-white text-gray-700') +
+    ' flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all';
+  document.getElementById('btnInsta').className =
+    (mode==='insta' ? 'mode-insta' : 'border border-gray-300 bg-white text-gray-700') +
+    ' flex items-center gap-1.5 px-4 py-1.5 rounded-full text-sm font-medium transition-all';
+  document.getElementById('sidebarLabel').textContent =
+    mode==='blog' ? '블로그 콘텐츠' : '인스타 콘텐츠';
+  renderSidebar();
+  showEmpty();
+}
 
-            // 데이터 구조: item.content.blog.A -> 이제는 item.content.A (이미 분리됨)
-            // 하지만 아까 JSON 구조를 보니 content.insta.A 처럼 중첩되어 있을 수도 있음.
-            // 안전하게 처리:
-            let posts = [];
-            
-            if (item.content[currentMode]) {
-                 posts = item.content[currentMode][currentOption]; // 중첩된 경우 (content.blog.A)
-            } else if (item.content[currentOption]) {
-                 posts = item.content[currentOption]; // 직접 있는 경우 (content.A)
-            } else {
-                 // 예외: 인스타 모드인데 content에 blog만 있거나 그 반대
-                 container.innerHTML = '<div style="color:#999; margin-top:50px;">해당하는 콘텐츠가 없습니다.</div>';
-                 return;
-            }
+function setVersion(v) {
+  S.version = v;
+  ['A','B','C'].forEach(x => {
+    const cls = S.mode==='blog' ? 'on-blog' : 'on-insta';
+    document.getElementById('v'+x).className = 'v-tab' + (x===v ? ' '+cls : '');
+  });
+  document.getElementById('personaLabel').textContent =
+    '— ' + (PERSONA_LABELS[S.mode][v] || '');
+  renderPreview();
+}
 
-            if (!posts || posts.length === 0) {
-                container.innerHTML = '<div style="color:#999; margin-top:50px;">선택한 옵션의 글이 없습니다.</div>';
-                return;
-            }
+/* ════════════════════════════════════════
+   SIDEBAR
+════════════════════════════════════════ */
+function renderSidebar() {
+  const items = S.mode==='blog' ? S.data.blog : S.data.insta;
+  const el = document.getElementById('sidebarItems');
+  if (!items || items.length === 0) {
+    el.innerHTML = `<p class="text-xs text-gray-400 px-2 py-4 text-center">아직 등록된 콘텐츠가<br>없습니다</p>`;
+    return;
+  }
+  el.innerHTML = items.map(item => {
+    const { date, label } = parseId(item.id);
+    const thumb = item.thumbnail
+      ? `<img src="${item.thumbnail}" class="w-8 h-8 rounded object-cover flex-shrink-0" onerror="this.style.display='none'" loading="lazy" />`
+      : `<div class="w-8 h-8 rounded bg-gray-100 flex items-center justify-center text-xs flex-shrink-0">${S.mode==='blog'?'📝':'📸'}</div>`;
+    const activeClass = item.id === S.id
+      ? (S.mode==='blog' ? 'active-blog' : 'active-insta')
+      : '';
+    return `
+      <button class="folder-card ${activeClass}" onclick="selectItem('${escAttr(item.id)}')">
+        <div class="flex items-center gap-2">
+          ${thumb}
+          <div class="min-w-0">
+            ${date ? `<p class="text-xs text-gray-400 leading-none mb-0.5">${date}</p>` : ''}
+            <p class="text-xs font-medium text-gray-700 leading-snug truncate max-w-[140px]">${label}</p>
+          </div>
+        </div>
+      </button>`;
+  }).join('');
+}
 
-            const post = posts[0]; // 첫번째 글만 표시
+function parseId(id) {
+  // "260207_기능장수업" → date:"26.02.07" label:"기능장수업"
+  const m = String(id).match(/^(\d{6})_?(.*)/);
+  if (m) {
+    const d = m[1];
+    return {
+      date: `20${d.slice(0,2)}.${d.slice(2,4)}.${d.slice(4,6)}`,
+      label: m[2].replace(/_/g,' ') || id
+    };
+  }
+  return { date:'', label: String(id).replace(/_/g,' ') };
+}
+function escAttr(s){ return String(s).replace(/'/g,"&#39;"); }
 
-            if (currentMode === 'blog') {
-                container.innerHTML = `
-                    <div class="blog-card">
-                        <h1 style="margin-bottom:10px;">${post.title || '제목 없음'}</h1>
-                        <div style="font-size:13px; color:#888; margin-bottom:30px;">${item.date} · 전체공개</div>
-                        <div style="line-height:1.8;">${post.content || ''}</div>
-                    </div>
-                `;
-            } else {
-                container.innerHTML = `
-                    <div class="insta-card">
-                        <div class="insta-header">
-                            <div style="width:30px; height:30px; background:#eee; border-radius:50%;"></div>
-                            leesujin0718
-                        </div>
-                        <img src="${post.image || ''}" class="insta-img">
-                        <div class="insta-body">
-                            <b>leesujin0718</b> ${post.caption ? post.caption.replace(/\n/g, '<br>') : ''}
-                        </div>
-                    </div>
-                `;
-            }
-        }
+/* ════════════════════════════════════════
+   SELECT ITEM
+════════════════════════════════════════ */
+function selectItem(id) {
+  S.id = id; S.version = 'A';
+  renderSidebar();          // re-highlight active
+  setVersion('A');          // also calls renderPreview
+  document.getElementById('ctrlBar').classList.remove('hidden');
+  document.getElementById('ctrlBar').style.display = 'flex';
+}
 
-        // 유틸리티: 모드 변경
-        function setMode(mode) {
-            currentMode = mode;
-            currentIndex = 0; // 모드 바뀌면 첫 번째 항목으로 리셋
-            
-            document.querySelectorAll('.mode-tabs button').forEach(b => {
-                b.classList.toggle('active', b.classList.contains(mode));
-            });
-            
-            renderSidebar(); // 사이드바도 다시 그려야 함 (목록이 다르니까)
-            renderContent();
-        }
+/* ════════════════════════════════════════
+   RENDER PREVIEW
+════════════════════════════════════════ */
+function renderPreview() {
+  if (!S.id) { showEmpty(); return; }
+  S.mode === 'blog' ? renderBlog() : renderInsta();
+}
 
-        // 유틸리티: 옵션 변경
-        function setOption(opt) {
-            currentOption = opt;
-            document.querySelectorAll('.option-tabs button').forEach(b => {
-                b.classList.toggle('active', b.innerText.includes(opt));
-            });
-            renderContent();
-        }
-    </script>
+function showEmpty() {
+  document.getElementById('emptyState').classList.remove('hidden');
+  document.getElementById('blogPrev').classList.add('hidden');
+  document.getElementById('instaPrev').classList.add('hidden');
+  document.getElementById('ctrlBar').classList.add('hidden');
+}
 
+/* ── BLOG ── */
+function renderBlog() {
+  const item = S.data.blog.find(x => x.id === S.id);
+  if (!item) { showEmpty(); return; }
+
+  const posts = (item.content && item.content[S.version]) || [];
+  const post = Array.isArray(posts) ? posts[0] : null;
+
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('instaPrev').classList.add('hidden');
+  document.getElementById('blogPrev').classList.remove('hidden');
+
+  const { date, label } = parseId(item.id);
+  document.getElementById('bTitle').textContent = post?.title || label;
+  document.getElementById('bMeta').textContent = `${date} · 한국조리기능장요리발효학원`;
+
+  // Body: render content + inline images
+  let html = post?.content || '<p class="text-gray-400 text-sm">이 버전의 내용이 없습니다.</p>';
+  // Inject images if images array exists and not already in content
+  if (post?.images && post.images.length) {
+    const imgs = post.images.map(src =>
+      `<img src="${src}" alt="학원 이미지" loading="lazy" />`
+    ).join('');
+    // append images after content if not already embedded
+    if (!html.includes('<img')) html += imgs;
+  }
+  document.getElementById('bBody').innerHTML = html;
+
+  // Tags
+  const tags = post?.hashtags || item.hashtags || [];
+  document.getElementById('bTags').innerHTML = Array.isArray(tags)
+    ? tags.map(t => `<span class="naver-tag">${t.startsWith('#')?t:'#'+t}</span>`).join('')
+    : '';
+
+  // show/hide HTML copy button
+  document.getElementById('btnCopyHtml').classList.remove('hidden');
+}
+
+/* ── INSTA ── */
+function renderInsta() {
+  const item = S.data.insta.find(x => x.id === S.id);
+  if (!item) { showEmpty(); return; }
+
+  const post = (item.content && item.content[S.version]) || null;
+
+  document.getElementById('emptyState').classList.add('hidden');
+  document.getElementById('blogPrev').classList.add('hidden');
+  document.getElementById('instaPrev').classList.remove('hidden');
+  document.getElementById('instaPrev').style.display = 'flex';
+
+  // Thumbnail image
+  const imgArea = document.getElementById('igImg');
+  if (item.thumbnail) {
+    imgArea.innerHTML = `<img src="${item.thumbnail}" alt="인스타 이미지" loading="lazy" onerror="this.parentElement.innerHTML='<span class=no-img>🍳</span>'" />`;
+  } else {
+    imgArea.innerHTML = `<span class="no-img">🍳</span>`;
+  }
+
+  // Caption (split off hashtags)
+  const fullText = post?.text || '';
+  const hashIdx = fullText.search(/#[^\s]/);
+  let captionText = fullText, hashText = '';
+  if (hashIdx > -1) {
+    captionText = fullText.slice(0, hashIdx).trim();
+    hashText = fullText.slice(hashIdx).trim();
+  }
+  document.getElementById('igCaption').innerHTML =
+    '<b>leesujin0718</b>' + escHtml(captionText || '이 버전의 내용이 없습니다.');
+  document.getElementById('igTags').textContent = hashText;
+
+  document.getElementById('btnCopyHtml').classList.add('hidden');
+}
+
+/* ════════════════════════════════════════
+   COPY
+════════════════════════════════════════ */
+function copyHtml() {
+  const item = S.data.blog.find(x => x.id === S.id);
+  if (!item) return;
+  const posts = (item.content?.[S.version]) || [];
+  const post = Array.isArray(posts) ? posts[0] : null;
+  if (!post) return;
+
+  const footer = `<hr>
+<div style="background:#f9f9f9;padding:20px;border-radius:10px;border:1px solid #eee;">
+  <h3 style="margin-top:0">🍳 한국조리기능장요리발효학원</h3>
+  <p><b>문의:</b> 051-544-5380 / 010-3688-5380</p>
+  <p><b>위치:</b> 부산 해운대구 반송로924번길 6-2, 2~3층 (영산대역 4번 출구)</p>
+  <p><b>운영:</b> 평일 09:00~21:00 (주말 상담 예약 필수)</p>
+  <p>👉 <a href="https://naver.me/x1mx2Gwq">네이버 지도 보기</a></p>
+</div>`;
+
+  const tags = (post.hashtags || item.hashtags || [])
+    .map(t => t.startsWith('#') ? t : '#'+t).join(' ');
+
+  let html = `<h2>${escHtml(post.title||'')}</h2>\n` + (post.content||'');
+  if (post.images?.length && !post.content?.includes('<img')) {
+    html += post.images.map(s => `<img src="${s}" />`).join('\n');
+  }
+  if (tags) html += `\n<p>${tags}</p>`;
+  html += '\n' + footer;
+
+  navigator.clipboard.writeText(html).then(() => flash('btnCopyHtml', 'HTML 복사됨 ✓'));
+}
+
+function copyText() {
+  let text = '';
+  if (S.mode === 'blog') {
+    const item = S.data.blog.find(x => x.id === S.id);
+    if (!item) return;
+    const posts = item.content?.[S.version] || [];
+    const post = Array.isArray(posts) ? posts[0] : null;
+    if (!post) return;
+    // Strip HTML tags for plain text
+    const tmp = document.createElement('div');
+    tmp.innerHTML = (post.title ? post.title+'\n\n' : '') + (post.content||'');
+    text = tmp.textContent || '';
+    const tags = (post.hashtags||item.hashtags||[]).map(t=>t.startsWith('#')?t:'#'+t).join(' ');
+    if (tags) text += '\n\n' + tags;
+    text += '\n\n🍳 한국조리기능장요리발효학원\n📞 051-544-5380\n📍 부산 해운대구 반송로924번길 6-2';
+  } else {
+    const item = S.data.insta.find(x => x.id === S.id);
+    if (!item) return;
+    text = item.content?.[S.version]?.text || '';
+  }
+  navigator.clipboard.writeText(text).then(() => flash('btnCopyText', '복사됨 ✓'));
+}
+
+function flash(btnId, msg) {
+  const btn = document.getElementById(btnId);
+  const orig = btn.innerHTML;
+  btn.innerHTML = msg;
+  btn.classList.add('copied');
+  setTimeout(() => { btn.innerHTML = orig; btn.classList.remove('copied'); }, 1800);
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+/* ════════════════════════════════════════
+   BOOT
+════════════════════════════════════════ */
+init();
+</script>
 </body>
 </html>
