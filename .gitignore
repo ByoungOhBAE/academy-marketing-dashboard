@@ -1,0 +1,13 @@
+# System
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Synology
+.SynologyWorkingDirectory
+
+# Photos are large — use Git LFS if needed
+# photos/
+
+# Node (if local server is added later)
+node_modules/
