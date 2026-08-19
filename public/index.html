@@ -62,13 +62,24 @@
       font-size: 15.5px; line-height: 1.95; color: #333;
     }
     .naver-body img {
-      max-width: 100%; display: block; margin: 22px auto;
-      border-radius: 4px; box-shadow: 0 1px 6px rgba(0,0,0,.1);
+      max-width: 100%; display: block; margin: 28px auto;
+      border-radius: 6px; box-shadow: 0 2px 12px rgba(0,0,0,.12);
     }
-    .naver-body p  { margin: 0 0 14px; }
-    .naver-body h2 { font-size: 20px; font-weight: 700; margin: 28px 0 10px; color: #191919; }
-    .naver-body h3 { font-size: 17px; font-weight: 600; margin: 20px 0 8px; color: #333; }
-    .naver-body hr { border: none; border-top: 1px solid #eee; margin: 24px 0; }
+    .naver-body figure { margin: 28px 0; text-align: center; }
+    .naver-body figure img { margin: 0 auto 8px; }
+    .naver-body figcaption { font-size: 13px; color: #aaa; }
+    .naver-body p  { margin: 0 0 16px; }
+    .naver-body h2 { font-size: 20px; font-weight: 700; margin: 32px 0 12px; color: #191919;
+                     padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; }
+    .naver-body h3 { font-size: 17px; font-weight: 600; margin: 22px 0 10px; color: #333; }
+    .naver-body hr { border: none; border-top: 1px solid #eee; margin: 28px 0; }
+    .naver-body ul, .naver-body ol { padding-left: 20px; margin: 0 0 16px; }
+    .naver-body li { margin-bottom: 6px; line-height: 1.8; }
+    .naver-body .tip-box {
+      background: #f0fdf4; border-left: 4px solid #03c75a;
+      padding: 14px 18px; margin: 24px 0; border-radius: 0 6px 6px 0;
+      font-size: 14.5px; color: #166534;
+    }
     .naver-tags {
       padding: 14px 40px;
       border-top: 1px solid #f0f0f0;
@@ -404,15 +415,11 @@ function renderBlog() {
   document.getElementById('bTitle').textContent = post?.title || label;
   document.getElementById('bMeta').textContent = `${date} · 한국조리기능장요리발효학원`;
 
-  // Body: render content + inline images
+  // 이미지는 content HTML 안에 인라인으로 배치됨 — 그대로 렌더링
+  // images 배열이 있지만 content에 <img 태그가 없으면 자동 삽입
   let html = post?.content || '<p class="text-gray-400 text-sm">이 버전의 내용이 없습니다.</p>';
-  // Inject images if images array exists and not already in content
-  if (post?.images && post.images.length) {
-    const imgs = post.images.map(src =>
-      `<img src="${src}" alt="학원 이미지" loading="lazy" />`
-    ).join('');
-    // append images after content if not already embedded
-    if (!html.includes('<img')) html += imgs;
+  if (post?.images?.length && !html.includes('<img')) {
+    html += post.images.map(s => `<img src="${s}" style="max-width:100%;border-radius:8px;margin:12px 0" />`).join('\n');
   }
   document.getElementById('bBody').innerHTML = html;
 
